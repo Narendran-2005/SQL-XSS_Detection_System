@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Input Website</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .form-container {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input[type="text"], input[type="email"] {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #message {
+      margin-top: 1rem;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Contact Form</h2>
+    <form id="inputForm">
+      <input type="text" id="name" placeholder="Your Name" />
+      <input type="email" id="email" placeholder="Your Email" />
+      <button type="submit">Submit</button>
+    </form>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    document.getElementById('inputForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const message = document.getElementById("message");
+
+      if (!name || !email) {
+        message.textContent = "Please fill in both fields.";
+        return;
+      }
+
+      // Combine name + email for testing
+      const combinedInput = name + " " + email;
+
+      fetch('http://localhost:5000/detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: combinedInput })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.sql_injection) {
+          message.textContent = "Potential SQL Injection detected!";
+        } else if (data.xss_attack) {
+          message.textContent = "Potential XSS attack detected!";
+        } else {
+          message.textContent = `Thanks, ${name}! We'll contact you at ${email}.`;
+        }
+      })
+      .catch(error => {
+        message.textContent = "Error in checking input.";
+        console.error(error);
+      });
+    });
+  </script>
+
+</body>
+</html>
